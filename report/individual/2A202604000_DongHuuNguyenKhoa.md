@@ -18,7 +18,6 @@
 
 *Chép bảng so sánh cuối Phần 5 (F1 test, F1 SUB 40, p95 ms/tin, USD/1k tin) của chính bạn.*
 
-
                                  precision  recall  F1 (test)  F1 (SUB 40)  \
 
 1. BoW + LogReg (tự code)            1.000   0.781      0.877        0.889
@@ -65,18 +64,21 @@ Model tụt nhiều nhất là BoW + MLP, giảm 0.579 điểm F1. Tập test th
 
 Với BoW, nhóm khó nhất là spam giọng tự nhiên và thao túng/lừa đảo. BoW chỉ nhìn các token rời rạc và tần suất từ, nên dễ bỏ sót spam không chứa từ khóa rõ ràng hoặc dùng cách diễn đạt giống tin nhắn bình thường. Nhóm né từ khóa cũng khó vì chỉ cần thay đổi cách viết là vector từ thay đổi mạnh.
 
-
-
-
-
 ## 5. Thử thách cá nhân
 
 *Đề theo SEED của bạn, cách làm, kết quả, giải thích.*
 
+
+
+Với `message[0]` và `message[1]`, mình nhắm đến việc chỉ trigger Embedding, BoW sẽ không thể phát hiện `spam` vì mình đã cố gắng né những từ có thể có signal, nhất là với nhóm có signal mạnh (vd “free”,  “win”, “call”, “txt”). Tuy nhiên câu từ vẫn có đủ tín hiệu để embedding có thể xác định được ngữ cảnh và mục đích giao tiếp của câu
+
+Với `message[2]`, mình nhắm đến việc BoW sẽ bị trigger vì từ "free", và Embedding sẽ cho kết quả `ham`. ở đây "free" có tín hiệu mạnh và những từ xung quanh câu chưa đủ nhiều để BoW có thẻ classify là `ham`
+
+Lần này với `message[3]`, mình muốn cả 2 mô hình đều trả kết quả `ham`. Với embedding có thể nhận biết được ngữ nghĩa, và BoW có thêm nhiều từ xung quanh trong câu để tín hiệu của "free" không bị lấn át làm đổi nhãn dự đoán của mô hình
+
 ## 6. Phương án cho sản phẩm thật
 
 *Với yêu cầu p95 < 50 ms/tin cho 10 triệu SMS/ngày: chọn phương án nào, dẫn số liệu nào, chấp nhận đánh đổi gì.*
-
 
 Ta có thể sử dụng một pipeline phân loại theo độ khó, chia theo từng tier xử lý và sẽ escalate (như cơ chế của SOC) lên tầng cao hơn mỗi khi gặp input khó
 1/ Dùng các luật đơn giản để xử lý các case rõ ràng, chẳng hạn URL độc hại, người gửi bị chặn hoặc mẫu spam quá rõ.
