@@ -45,9 +45,29 @@
 
 *Chọn 3 dự đoán `predict(...)` lệch nhiều nhất so với kết quả. Mỗi cái: bạn đoán gì, ra gì, vì sao lệch.*
 
+### Predict Expr 1B
+
+Mình khá là expect với learning rate cực cao thì model sẽ bị overshoot và không thể hội tụ được, tuy nhiên model vẫn có thể đạt được loss rất nhỏ. Mình chỉ implement các hàm dự đoán và không rõ optimizer model đang dùng là gì để có dự đoán chính xác hơn
+
+### Predict Expr 3B
+
+Mình khá là mong sự chênh lệch giữa shallow và deep learning model sẽ lớn hơn, tuy nhiên với tập dataset nhỏ và không quá phức tạp thì mình phải chấp nhận rằng không có quá nhiều không gian để các mô hình deep learning có thể có cách biệt rõ hơn với shallow model
+
+### Predict Expr 5
+
+Mình khá là expect Embedding + kNN sẽ có Pareto tốt hơn so với Embedding + LogRes. Vì tập dataset không quá phức tạp nên mình nghĩ với lợi thế tìm kiếm rất nhanh của kNN sẽ có lợi hơn LogRes. Thực tế thì với tập dataset khá nhỏ, những kết quả có thể biến động nhiều hơn.
+
 ## 4. Phân tích 50 case khó
 
 *Model nào tụt nhiều nhất, ở nhóm case nào? Nêu 2 case cụ thể và cơ chế khiến model sai.*
+
+Model tụt nhiều nhất là BoW + MLP, giảm 0.579 điểm F1. Tập test thường quá lạc quan vì thường có cùng phân phối với dữ liệu huấn luyện, chứa các từ khóa spam rõ ràng và ít trường hợp né từ khóa, lừa đảo tinh vi hoặc prompt injection. 50 case khó tạo ra sự thay đổi phân phối và kiểm tra khả năng tổng quát hóa thực tế.
+
+Với BoW, nhóm khó nhất là spam giọng tự nhiên và thao túng/lừa đảo. BoW chỉ nhìn các token rời rạc và tần suất từ, nên dễ bỏ sót spam không chứa từ khóa rõ ràng hoặc dùng cách diễn đạt giống tin nhắn bình thường. Nhóm né từ khóa cũng khó vì chỉ cần thay đổi cách viết là vector từ thay đổi mạnh.
+
+
+
+
 
 ## 5. Thử thách cá nhân
 
@@ -57,6 +77,16 @@
 
 *Với yêu cầu p95 < 50 ms/tin cho 10 triệu SMS/ngày: chọn phương án nào, dẫn số liệu nào, chấp nhận đánh đổi gì.*
 
+
+Ta có thể sử dụng một pipeline phân loại theo độ khó, chia theo từng tier xử lý và sẽ escalate (như cơ chế của SOC) lên tầng cao hơn mỗi khi gặp input khó
+1/ Dùng các luật đơn giản để xử lý các case rõ ràng, chẳng hạn URL độc hại, người gửi bị chặn hoặc mẫu spam quá rõ.
+2/ Đưa các tin còn lại vào mô hình Embedding + Logistic Regression.
+3/ Nếu độ tin cậy cao, ví dụ \(p < 0,3\) hoặc \(p > 0,7\), dùng luôn dự đoán của mô hình nhanh.
+4/ Nếu mô hình không chắc chắn, với \(p \in [0,3; 0,7]\), chuyển tin nhắn sang LLM để kiểm tra thêm.
+5/ Lưu lại các case không chắc chắn để theo dõi và huấn luyện lại sau này.
+
 ## 7. AI log và điều đã học
 
 *Mỗi lần dùng AI: hỏi gì, nhận gì, bạn sửa gì. Sau đó 2–3 câu: điều bạn hiểu ra hôm nay mà trước đó chưa hiểu.*
+
+Mình sử dụng AI chỉ để fix bug và typo trong code của mình. Sau mỗi lần đọc docs, mình muốn tự implement code vì mình khác thích code tay, và mình nhận ra mình rất dễ mắc các lỗi typo không mong muốn, AI rất nhạy để phát hiện ra những lỗi này.
